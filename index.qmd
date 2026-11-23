@@ -1,0 +1,645 @@
+---
+title: "TALLER DE ESTADÍSTICA DESCRIPTIVA "
+subtitle: "TALLER MEDIDAS DE TENDENCIA CENTRAL: MEDIA ARITMÉTICA, MEDIA
+ARMÓNICA Y MEDIA GEOMÉTRICA"
+author: 
+  - name: Luis Felipe Barrera Gomez<br>Luis Alberto Varon Trujillo<br>Oscar Ivan guerrero Contreras<br>Diana lizeth Rubio Bermejo 
+    affiliation: "Escuela Superior de Administracion Publica"
+    affiliation-url: "https://www.esap.edu.co/"
+date: today
+lang: es
+title-block-banner: "#98b6ed"
+
+format:
+  html:
+    page-layout: full
+    fontsize: 14pt
+    toc: true
+    toc-location: right
+    number-sections: true
+    code-fold: true
+    code-summary: "Ver código"
+    theme: cosmo
+    highlight-style: monokai
+    html-math-method: katex
+    smooth-scroll: true
+    link-external-newwindow: true
+    code-overflow: scroll
+    favicon: favicon.ico
+    
+editor: visual
+
+knitr:
+  opts_chunk:
+    message: false
+    warning: false
+    fig.align: center
+    fig.width: 6
+    fig.height: 6
+    out.width: "70%"
+---
+
+```{r setup}
+options(
+  knitr.table.format = "html",
+  scipen = 999
+)
+```
+
+```{r}
+# Función reutilizable para presentar tablas con formato académico
+mostrar_tabla <- function(datos, titulo = NULL, digitos = 2) {
+  tabla <- as.data.frame(datos)
+
+  # Encabezados más claros para las variables utilizadas en el taller
+  etiquetas <- c(
+    xi = "Valor (xi)",
+    fi = "Frecuencia (fi)",
+    fi_xi = "Producto (xi × fi)",
+    fi_sobre_xi = "Frecuencia / valor",
+    fi_log_xi = "Frecuencia × ln(valor)",
+    Li = "Límite inferior",
+    Ls = "Límite superior",
+    mi = "Marca de clase",
+    fi_mi = "Frecuencia × marca",
+    Indicador = "Indicador",
+    Resultado = "Resultado",
+    Resultado_dias = "Resultado (días)",
+    Medida = "Medida estadística",
+    km_h = "Velocidad (km/h)",
+    Total_funcionarios = "Total de funcionarios",
+    Media_ponderada = "Media ponderada",
+    Media_datos_expandidos = "Media de datos expandidos",
+    Media_sin_ponderar_no_valida = "Media sin ponderar (no válida)",
+    Media_armonica_ponderada = "Media armónica ponderada",
+    Media_armonica_expandida = "Media armónica expandida",
+    Media_aritmetica_ponderada = "Media aritmética ponderada",
+    Factor_geometrico_promedio = "Factor geométrico promedio",
+    Tasa_porcentual_promedio = "Tasa promedio (%)",
+    Verificacion_expandida = "Verificación expandida",
+    Media_miles_de_pesos = "Media (miles de pesos)",
+    Media_en_pesos = "Media (pesos)",
+    Factor_geometrico_aproximado = "Factor geométrico aproximado",
+    Tasa_geometrica_porcentual = "Tasa geométrica (%)",
+    Media_aritmetica_de_factores = "Media aritmética de factores"
+  )
+
+  nombres <- names(tabla)
+  nombres[nombres %in% names(etiquetas)] <- etiquetas[nombres[nombres %in% names(etiquetas)]]
+  names(tabla) <- nombres
+
+  knitr::kable(
+    tabla,
+    format = "html",
+    caption = titulo,
+    digits = digitos,
+    align = "c",
+    row.names = FALSE,
+    escape = TRUE,
+    format.args = list(decimal.mark = ",", big.mark = ".")
+  ) |>
+    kableExtra::kable_styling(
+      bootstrap_options = c("striped", "hover", "condensed", "responsive"),
+      full_width = FALSE,
+      position = "center",
+      font_size = 14
+    ) |>
+    kableExtra::row_spec(
+      0,
+      bold = TRUE,
+      color = "#FFFFFF",
+      background = "#17365D"
+    ) |>
+    kableExtra::column_spec(
+      1,
+      bold = TRUE,
+      color = "#17365D"
+    )
+}
+```
+
+```{=html}
+<div style="position:absolute; top:10px; right:10px;">
+<img src="Logo_Esap.png" width="150">
+</div>
+```
+
+```{=html}
+<style>
+/* Diseño académico general */
+body {
+  background: #F0CE47;
+  color: #263445;
+  font-size: 1rem;
+  line-height: 1.65;
+}
+#quarto-content, main.content {
+  background: #BBFCF0;
+}
+main.content {
+  padding: 1.6rem 2rem;
+  border-radius: 10px;
+}
+h1, h2, h3, h4 {
+  color: #17365d;
+  font-weight: 700;
+}
+h1 {
+  border-bottom: 3px solid #2874a6;
+  padding-bottom: .5rem;
+}
+h2 {
+  border-bottom: 1px solid #dce3eb;
+  padding-bottom: .35rem;
+}
+#TOC, nav#TOC {
+  font-size: .93rem;
+}
+
+/* Todas las tablas: centradas, legibles y consistentes */
+table {
+  width: auto !important;
+  min-width: 65%;
+  max-width: 100%;
+  margin: 1.4rem auto !important;
+  border-collapse: separate !important;
+  border-spacing: 0;
+  background: #ffffff !important;
+  font-size: .94rem;
+  border: 1px solid #d7e0ea !important;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 3px 10px rgba(23, 54, 93, .08);
+}
+table thead th {
+  background: #17365d !important;
+  color: #ffffff !important;
+  text-align: center !important;
+  vertical-align: middle;
+  padding: .8rem .9rem !important;
+  border: 1px solid #17365d !important;
+  font-weight: 700;
+}
+table tbody td {
+  padding: .7rem .9rem !important;
+  text-align: center;
+  vertical-align: middle;
+  border: 1px solid #e0e7ef !important;
+}
+table tbody tr:nth-child(even) {
+  background: #edf3f8 !important;
+}
+table tbody tr:hover {
+  background: #e1edf7 !important;
+}
+table caption {
+  caption-side: top;
+  color: #17365d;
+  font-weight: 700;
+  text-align: center;
+  padding: .65rem;
+  font-size: 1rem;
+}
+.math.display {
+  margin: 1.4rem 0;
+}
+pre {
+  border-radius: 8px;
+}
+</style>
+```
+
+**Cargar paquetes**
+
+```{r}
+ipak <- function(pkg){
+
+  options(repos = c(CRAN="https://cloud.r-project.org"))
+
+  new.pkg <- pkg[!(pkg %in% rownames(installed.packages()))]
+
+  if(length(new.pkg)) install.packages(new.pkg, dependencies = TRUE)
+
+  invisible(lapply(pkg, function(p)
+    suppressPackageStartupMessages(library(p, character.only = TRUE))
+  ))
+}
+
+packages <- c("tidyverse","kableExtra","psych","readxl")
+
+ipak(packages)
+```
+
+**Introducción**
+
+Este informe resuelve los diez ejercicios del taller sobre media aritmética, media armónica y media geométrica. Se presentan las fórmulas, el procedimiento reproducible en R y la interpretación de cada resultado en el contexto de la gestión pública.
+
+Los datos del taller son simulados con fines didácticos. En los ejercicios agrupados por intervalos, las marcas de clase representan los valores de cada intervalo; por ello, los resultados son aproximaciones.
+
+**Preparación del entorno**
+
+El cálculo principal se realiza con R base. Los paquetes `psych`, `DescTools` y `dplyr` se utilizan para las verificaciones y la presentación de tablas.
+
+```{r}
+# Ejecutar una sola vez si los paquetes no están instalados:
+# install.packages(c("psych", "DescTools", "dplyr"))
+
+library(dplyr)
+```
+
+# Datos no agrupados
+
+**Ejercicio 1. Tiempos de respuesta a solicitudes**
+
+**Datos:** 3, 5, 4, 6, 8, 4, 7, 5, 3, 9, 6 y 4 días hábiles.
+
+La media aritmética se calcula sumando los tiempos y dividiendo entre el número de solicitudes:
+
+\[ \bar{x}=\frac{\sum_{i=1}^{n}x_i}{n} \]
+
+donde (x_i) representa el tiempo de respuesta de cada solicitud y (n) el total de solicitudes.
+
+```{r}
+dias <- c(3, 5, 4, 6, 8, 4, 7, 5, 3, 9, 6, 4)
+
+media_dias <- mean(dias)
+media_manual <- sum(dias) / length(dias)
+
+mostrar_tabla(data.frame(
+  Indicador = c("Media con mean()", "Media manual"),
+  Resultado_dias = c(media_dias, media_manual)
+), "Tabla 1. Comparación de medias del tiempo de respuesta", digitos = 4)
+```
+
+**Resultado:** la media es **5,3333 días hábiles**. Los dos procedimientos coinciden.
+
+**Interpretación:** en promedio, la oficina tarda aproximadamente 5,33 días hábiles en responder una solicitud. La meta institucional es de cinco días; por tanto, el promedio supera la meta en 0,33 días (aproximadamente ocho horas laborales si se consideran jornadas de ocho horas). La media aritmética es pertinente porque se promedian tiempos expresados en la misma unidad y cada solicitud tiene el mismo peso.
+
+**Ejercicio 2. Velocidad de atención de brigadas**
+
+**Datos:** 24, 30, 36, 40 y 45 km/h. Las brigadas recorren distancias iguales.
+
+**Tabla 2. Comparación de medidas de velocidad**
+
+| Medida estadística | Resultado | Unidad |
+|:-------------------|----------:|:------:|
+| Media armónica     |   33,3333 |  km/h  |
+| Media aritmética   |   35,0000 |  km/h  |
+
+**Resultado principal:** La velocidad promedio para recorridos de igual distancia es de **33,33 km/h**.
+
+```{r}
+velocidad <- c(24, 30, 36, 40, 45)
+
+H_velocidad <- length(velocidad) / sum(1 / velocidad)
+A_velocidad <- mean(velocidad)
+
+# Verificaciones opcionales con paquetes:
+# psych::harmonic.mean(velocidad)
+# DescTools::Hmean(velocidad)
+
+mostrar_tabla(data.frame(
+  Medida = c("Media armónica", "Media aritmética"),
+  km_h = c(H_velocidad, A_velocidad)
+), "Tabla 2. Comparación de velocidades promedio", digitos = 4)
+```
+
+**Resultado:** media armónica = **33,3333 km/h**; media aritmética = **35 km/h**.
+
+**Interpretación:** para recorridos de igual longitud, la velocidad promedio conjunta es 33,33 km/h. La media armónica es pertinente porque el tiempo empleado en cada recorrido depende inversamente de la velocidad. Si las distancias fueran diferentes, se necesitarían las distancias y los tiempos (o los pesos de exposición correspondientes); no sería correcto aplicar automáticamente la media armónica simple.
+
+**Ejercicio 3. Crecimiento de la recaudación municipal**
+
+**Tasas anuales:** 6 %, 9 %, 12 %, 5 % y 10 %.
+
+Las tasas porcentuales deben convertirse en factores multiplicativos. La media geométrica de los factores se transforma nuevamente en porcentaje:
+
+$$
+G = \left[\prod_{i=1}^{n}\left(1+\frac{r_i}{100}\right)\right]^{\frac{1}{n}}
+$$
+
+La tasa compuesta geométrica se calcula mediante:
+
+$$
+r_G = (G-1)\times 100
+$$
+
+```{r}
+tasas <- c(6, 9, 12, 5, 10)
+factores <- 1 + tasas / 100
+
+G_factor <- exp(mean(log(factores)))
+tasa_compuesta <- (G_factor - 1) * 100
+media_aritmetica_tasas <- mean(tasas)
+
+mostrar_tabla(data.frame(
+  Indicador = c("Factor geométrico promedio", "Tasa compuesta geométrica (%)",
+                "Media aritmética de las tasas (%)"),
+  Resultado = c(G_factor, tasa_compuesta, media_aritmetica_tasas)
+), "Tabla 3. Resumen del crecimiento de la recaudación", digitos = 4)
+
+# Verificaciones opcionales:
+# psych::geometric.mean(factores)
+# DescTools::Gmean(factores)
+```
+
+**Resultado:** factor geométrico promedio = **1,0836935**; tasa anual compuesta = **8,3694 %**; media aritmética = **8,4 %**.
+
+**Interpretación:** la recaudación propia tuvo una tasa anual compuesta promedio aproximada de 8,37 % durante el periodo. La media aritmética es 8,4 %, ligeramente superior. Pueden diferir porque el crecimiento se acumula multiplicativamente de un año al siguiente; por eso, para resumir tasas compuestas se utiliza la media geométrica de los factores y no el promedio aritmético directo de los porcentajes.
+
+# Datos agrupados en tablas de frecuencias
+
+**Ejercicio 4. Número de trámites atendidos**
+
+**Tabla 4. Distribución de trámites atendidos**
+
+| Trámites (xi) \| Número de funcionarios (fi) \|
+|              8 \| 3 \|
+|             10 \| 5 \|
+|             12 \| 9 \|
+|             14 \| 8 \|
+|             16 \| 5 \|
+|      **Total** \| **30** \|
+
+La media aritmética ponderada incorpora la frecuencia de cada valor:
+
+$$
+\bar{x}_w = \frac{\sum_{i=1}^{k} x_i f_i}{\sum_{i=1}^{k} f_i}
+$$
+
+```{r}
+
+tabla_tramites <- tibble(
+  xi = c(8, 10, 12, 14, 16),
+  fi = c(3, 5, 9, 8, 5)
+) |>
+  mutate(fi_xi = fi * xi)
+
+N_tramites <- sum(tabla_tramites$fi)
+media_tramites <- sum(tabla_tramites$fi_xi) / N_tramites
+datos_tramites <- rep(tabla_tramites$xi, times = tabla_tramites$fi)
+media_expandida <- mean(datos_tramites)
+
+mostrar_tabla(tabla_tramites, "Tabla 4. Distribución de trámites por funcionario", digitos = 4)
+mostrar_tabla(data.frame(
+  Total_funcionarios = N_tramites,
+  Media_ponderada = media_tramites,
+  Media_datos_expandidos = media_expandida,
+  Media_sin_ponderar_no_valida = mean(tabla_tramites$xi)
+), "Tabla 4A. Verificación de la media ponderada de trámites", digitos = 4)
+```
+
+**Resultado:** media ponderada = **12,4667 trámites por funcionario**. La expansión mediante `rep()` produce el mismo resultado. Calcular `mean(xi)` sin frecuencias daría 12, pero sería incorrecto porque trataría cada nivel de trámites como si tuviera igual número de funcionarios.
+
+**Interpretación:** los 30 funcionarios atendieron en promedio 12,47 trámites durante la jornada. La frecuencia es indispensable porque nueve funcionarios atendieron 12 trámites, mientras que solo tres atendieron 8; cada observación debe contribuir de acuerdo con cuántos funcionarios representa.
+
+**Ejercicio 5. Tasas de procesamiento de expedientes**
+
+**Tabla 5. Distribución de tasas de procesamiento**
+
+| Tasa (xi), expedientes por hora | Frecuencia (fi) |
+|--------------------------------:|----------------:|
+|                               4 |               4 |
+|                               5 |               6 |
+|                               8 |               7 |
+|                              10 |               3 |
+|                       **Total** |          **20** |
+
+La media armónica ponderada es:
+
+$$
+H_w=\frac{N}{\sum_{i=1}^{k}\frac{f_i}{x_i}}
+$$
+
+```{r}
+tabla_tasas <- tibble(
+  xi = c(4, 5, 8, 10),
+  fi = c(4, 6, 7, 3)
+) |>
+  mutate(fi_sobre_xi = fi / xi)
+
+N_tasas <- sum(tabla_tasas$fi)
+H_tasas <- N_tasas / sum(tabla_tasas$fi_sobre_xi)
+A_tasas <- sum(tabla_tasas$fi * tabla_tasas$xi) / N_tasas
+
+datos_tasas <- rep(tabla_tasas$xi, times = tabla_tasas$fi)
+H_expandida <- length(datos_tasas) / sum(1 / datos_tasas)
+
+mostrar_tabla(tabla_tasas, "Tabla 5. Frecuencia de tasas de procesamiento", digitos = 4)
+mostrar_tabla(data.frame(
+  Media_armonica_ponderada = H_tasas,
+  Media_armonica_expandida = H_expandida,
+  Media_aritmetica_ponderada = A_tasas
+), "Tabla 5A. Verificación de medias de procesamiento", digitos = 4)
+# Verificación opcional:
+# psych::harmonic.mean(datos_tasas)
+```
+
+**Resultado:** media armónica ponderada = **5,9259 expedientes por hora**; media aritmética ponderada = **6,6 expedientes por hora**. La expansión confirma la media armónica.
+
+**Interpretación y condición de uso:** la media armónica es defendible si las observaciones representan tasas comparables bajo una misma unidad de exposición o si cada jornada tiene igual exposición temporal y el promedio que se desea construir corresponde a tasas por unidad de tiempo. Si las jornadas tienen duraciones diferentes, o si los grupos representan exposiciones distintas, se requieren los tiempos o exposiciones reales para construir una tasa global apropiada. La frecuencia por sí sola no garantiza esa condición.
+
+**Ejercicio 6. Factores de crecimiento de la cobertura**
+
+**Tabla 6. Distribución de factores de crecimiento de cobertura**
+
+| Factor (xi) | Frecuencia (fi) |
+|------------:|----------------:|
+|        1,02 |               4 |
+|        1,05 |               8 |
+|        1,08 |               5 |
+|        1,12 |               3 |
+|   **Total** |          **20** |
+
+La media geométrica ponderada es:
+
+$$
+G_w=\exp\left(\frac{\sum_{i=1}^{k}f_i\ln(x_i)}
+{\sum_{i=1}^{k}f_i}\right)
+$$
+
+```{r}
+tabla_cobertura <- tibble(
+  xi = c(1.02, 1.05, 1.08, 1.12),
+  fi = c(4, 8, 5, 3)
+) |>
+  mutate(fi_log_xi = fi * log(xi))
+
+G_cobertura <- exp(sum(tabla_cobertura$fi_log_xi) /
+                     sum(tabla_cobertura$fi))
+tasa_cobertura <- (G_cobertura - 1) * 100
+datos_cobertura <- rep(tabla_cobertura$xi, times = tabla_cobertura$fi)
+
+mostrar_tabla(tabla_cobertura, "Tabla 6. Frecuencia de factores de crecimiento de cobertura", digitos = 4)
+mostrar_tabla(data.frame(
+  Factor_geometrico_promedio = G_cobertura,
+  Tasa_porcentual_promedio = tasa_cobertura,
+  Verificacion_expandida = exp(mean(log(datos_cobertura)))
+), "Tabla 6A. Verificación del crecimiento de cobertura", digitos = 4)
+# Verificación opcional:
+# DescTools::Gmean(datos_cobertura)
+```
+
+**Resultado:** factor promedio = **1,0615352**, equivalente a una tasa de crecimiento aproximada de **6,1535 %**.
+
+**Interpretación:** el factor geométrico promedio indica que, en términos multiplicativos, la cobertura creció alrededor de 6,15 % en las unidades territoriales consideradas. La media geométrica es apropiada porque los factores son positivos y representan cambios multiplicativos. No se debe aplicar a factores nulos o negativos.
+
+# Datos agrupados en intervalos
+
+**Ejercicio 7. Gasto mensual por habitante**
+
+Los datos se expresan en miles de pesos.
+
+**Tabla 7. Distribución del gasto mensual por habitante**
+
+| Intervalo de gasto (miles de pesos) | Frecuencia (fi) |
+|-------------------------------------|----------------:|
+| 100 – menor que 200                 |               5 |
+| 200 – menor que 300                 |               9 |
+| 300 – menor que 400                 |              14 |
+| 400 – menor que 500                 |               8 |
+| 500 – menor que 600                 |               4 |
+| **Total**                           |          **40** |
+
+La marca de clase es el punto medio del intervalo:
+
+$$
+m_i=\frac{L_i+L_s}{2}
+$$
+
+La media aproximada es:
+
+$$
+\bar{x}\approx\frac{\sum_{i=1}^{k}f_i m_i}{N}
+$$
+
+```{r}
+tabla_gasto <- tibble(
+  Li = c(100, 200, 300, 400, 500),
+  Ls = c(200, 300, 400, 500, 600),
+  fi = c(5, 9, 14, 8, 4)
+) |>
+  mutate(
+    mi = (Li + Ls) / 2,
+    fi_mi = fi * mi
+  )
+
+media_gasto_miles <- sum(tabla_gasto$fi_mi) / sum(tabla_gasto$fi)
+media_gasto_pesos <- media_gasto_miles * 1000
+
+mostrar_tabla(tabla_gasto, "Tabla 7. Distribución del gasto mensual por habitante", digitos = 4)
+mostrar_tabla(data.frame(
+  Media_miles_de_pesos = media_gasto_miles,
+  Media_en_pesos = media_gasto_pesos
+), "Tabla 7A. Resultado estimado del gasto por habitante", digitos = 4)
+```
+
+**Resultado:** media aproximada = **342,5 miles de pesos**, es decir, **\$342.500 por habitante al mes**.
+
+**Interpretación:** el gasto mensual promedio estimado por habitante destinado a servicios comunitarios es de \$342.500. Es aproximado porque no se conocen los valores individuales de cada barrio: se supone que todos los barrios de un intervalo tienen un gasto igual a su marca de clase. La tabla completa incluye límites, frecuencias, marcas de clase y productos ponderados.
+
+**Ejercicio 8. Índice de crecimiento de ingresos**
+
+**Tabla 8. Distribución de factores de crecimiento de ingresos**
+
+| Intervalo del factor  | Frecuencia (fi) |
+|-----------------------|----------------:|
+| 1,00 – menor que 1,04 |               6 |
+| 1,04 – menor que 1,08 |              10 |
+| 1,08 – menor que 1,12 |               9 |
+| 1,12 – menor que 1,16 |               5 |
+| **Total**             |          **30** |
+
+Se emplean las marcas de clase como aproximación de los factores individuales y se calcula la media geométrica ponderada:
+
+$$
+G\approx\exp\left(
+\frac{\sum_{i=1}^{k}f_i\ln(m_i)}
+{\sum_{i=1}^{k}f_i}
+\right)
+$$
+
+```{r}
+tabla_ingresos <- tibble(
+  Li = c(1.00, 1.04, 1.08, 1.12),
+  Ls = c(1.04, 1.08, 1.12, 1.16),
+  fi = c(6, 10, 9, 5)
+) |>
+  mutate(
+    mi = (Li + Ls) / 2,
+    fi_log_mi = fi * log(mi)
+  )
+
+G_ingresos <- exp(sum(tabla_ingresos$fi_log_mi) /
+                    sum(tabla_ingresos$fi))
+tasa_ingresos <- (G_ingresos - 1) * 100
+A_ingresos <- sum(tabla_ingresos$fi * tabla_ingresos$mi) /
+                sum(tabla_ingresos$fi)
+
+mostrar_tabla(tabla_ingresos, "Tabla 8. Distribución de factores de crecimiento de ingresos", digitos = 4)
+mostrar_tabla(data.frame(
+  Factor_geometrico_aproximado = G_ingresos,
+  Tasa_geometrica_porcentual = tasa_ingresos,
+  Media_aritmetica_de_factores = A_ingresos
+), "Tabla 8A. Resultado estimado del crecimiento de ingresos", digitos = 4)
+```
+
+**Resultado:** factor geométrico aproximado = **1,0766072**, equivalente a **7,6607 %**. La media aritmética de los factores agrupados es **1,0773333**.
+
+**Interpretación:** el índice geométrico aproximado representa un crecimiento medio cercano a 7,66 %. El supuesto es que todos los factores ubicados dentro de un intervalo pueden representarse por su punto medio. La media geométrica resume mejor la evolución multiplicativa; la aritmética resume el centro aditivo de los factores. La diferencia entre ambas es pequeña en estos datos, pero no son medidas intercambiables.
+
+# Integración y análisis
+
+**Ejercicio 9. Selección de la medida adecuada**
+
+| Indicador de gestión | Medida recomendada | Justificación |
+|------------------------|------------------------|------------------------|
+| Días que tardan los trámites en resolverse | Media aritmética | Resume el tiempo promedio cuando cada trámite tiene el mismo peso y se mide en días comparables. |
+| Velocidad de vehículos que recorren distancias iguales | Media armónica | La velocidad es una razón entre distancia y tiempo; con distancias iguales, el tiempo varía inversamente con la velocidad. |
+| Factores anuales de crecimiento de cobertura | Media geométrica | Los factores se encadenan multiplicativamente y deben ser positivos. |
+
+No es correcto aplicar una única media a todos los indicadores porque cada fenómeno tiene una estructura matemática distinta. La media aritmética resume cantidades aditivas, la armónica resulta adecuada para ciertas tasas con igual exposición y la geométrica para factores multiplicativos.
+
+**Indicadores adicionales propuestos:**
+
+- **Media aritmética:** promedio de días hábiles para entregar licencias, certificados o respuestas a peticiones.
+- **Media armónica:** velocidad promedio de vehículos oficiales en recorridos de igual distancia entre sedes rurales.
+- **Media geométrica:** tasa anual compuesta de crecimiento de la población beneficiaria de un programa social.
+
+**Ejercicio 10. Informe breve de resultados**
+
+**Informe de aplicación de medias estadísticas a la gestión pública**
+
+**Objetivo.** Aplicar las medias aritmética, armónica y geométrica a indicadores simulados de gestión pública, con el fin de resumir tiempos de atención, velocidades operativas, productividad y crecimiento de programas e ingresos.
+
+**Metodología.** Se organizaron los datos en vectores y tablas de frecuencias en R. Para datos no agrupados se emplearon funciones como `mean()` y fórmulas directas. En datos agrupados se incorporaron las frecuencias como ponderaciones. En los intervalos se utilizaron las marcas de clase, por lo que los resultados se interpretan como aproximaciones.
+
+**Resultados principales.** El tiempo promedio de respuesta fue de 5,3333 días hábiles, superior a la meta de cinco días. La velocidad promedio de brigadas para distancias iguales fue de 33,3333 km/h, calculada mediante la media armónica. La tasa anual compuesta de crecimiento de la recaudación fue de 8,3694 %. El promedio ponderado de trámites fue de 12,4667 por funcionario. La tasa armónica ponderada de procesamiento fue de 5,9259 expedientes por hora, sujeta a la condición de exposición comparable. El crecimiento geométrico promedio de la cobertura fue de 6,1535 %. El gasto mensual estimado por habitante fue de \$342.500 y el crecimiento geométrico aproximado de los ingresos fue de 7,6607 %.
+
+**Conclusión administrativa.** Las medidas de tendencia central permiten sintetizar información para apoyar decisiones de planeación, seguimiento y evaluación. La selección de la media debe responder a la naturaleza del indicador: tiempos y cantidades aditivas, tasas bajo condiciones de exposición comparables o factores de crecimiento. Los resultados deben acompañarse de unidades, supuestos y contexto institucional para evitar interpretaciones equivocadas.
+
+**Limitaciones.** Los datos son simulados. Además, en los ejercicios 7 y 8 se sustituyeron los valores individuales por marcas de clase. En el ejercicio 5, la interpretación de la media armónica como tasa operativa exige que la exposición de las jornadas sea comparable; si no lo es, se necesitan los tiempos o exposiciones efectivos.
+
+**Conclusiones generales**
+
+1.  La media aritmética es apropiada para promediar cantidades comparables con igual peso o con ponderaciones explícitas.
+2.  La media armónica es especialmente útil para promediar velocidades cuando las distancias son iguales y para tasas cuando la estructura de exposición lo justifica.
+3.  La media geométrica es la medida adecuada para resumir factores positivos de crecimiento acumulativo.
+4.  En tablas de frecuencias, omitir las frecuencias cambia el peso de las observaciones y puede producir un promedio incorrecto.
+5.  En datos agrupados por intervalos, la marca de clase facilita el cálculo, pero introduce una aproximación.
+
+**Anexo. Comprobaciones y control de condiciones**
+
+```{r}
+# Comprobaciones de totales y condiciones matemáticas
+stopifnot(length(dias) == 12)
+stopifnot(all(velocidad > 0))
+stopifnot(all(factores > 0))
+stopifnot(sum(tabla_tramites$fi) == 30)
+stopifnot(sum(tabla_tasas$fi) == 20)
+stopifnot(sum(tabla_cobertura$fi) == 20)
+stopifnot(sum(tabla_gasto$fi) == 40)
+stopifnot(sum(tabla_ingresos$fi) == 30)
+
+cat("Todas las comprobaciones de datos y frecuencias finalizaron correctamente.\n")
+```
