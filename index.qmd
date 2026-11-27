@@ -234,7 +234,11 @@ ipak(packages)
 
 Este informe resuelve los diez ejercicios del taller sobre media aritmética, media armónica y media geométrica. Se presentan las fórmulas, el procedimiento reproducible en R y la interpretación de cada resultado en el contexto de la gestión pública.
 
+::: {.callout-note title="Alcance del ejercicio"}
 Los datos del taller son simulados con fines didácticos. En los ejercicios agrupados por intervalos, las marcas de clase representan los valores de cada intervalo; por ello, los resultados son aproximaciones.
+:::
+
+\:::
 
 **Preparación del entorno**
 
@@ -598,7 +602,11 @@ mostrar_tabla(data.frame(
 | Velocidad de vehículos que recorren distancias iguales | Media armónica | La velocidad es una razón entre distancia y tiempo; con distancias iguales, el tiempo varía inversamente con la velocidad. |
 | Factores anuales de crecimiento de cobertura | Media geométrica | Los factores se encadenan multiplicativamente y deben ser positivos. |
 
+::: {.callout-tip title="Criterio para elegir la media"}
 No es correcto aplicar una única media a todos los indicadores porque cada fenómeno tiene una estructura matemática distinta. La media aritmética resume cantidades aditivas, la armónica resulta adecuada para ciertas tasas con igual exposición y la geométrica para factores multiplicativos.
+:::
+
+\:::
 
 **Indicadores adicionales propuestos:**
 
@@ -614,7 +622,9 @@ No es correcto aplicar una única media a todos los indicadores porque cada fen�
 
 **Metodología.** Se organizaron los datos en vectores y tablas de frecuencias en R. Para datos no agrupados se emplearon funciones como `mean()` y fórmulas directas. En datos agrupados se incorporaron las frecuencias como ponderaciones. En los intervalos se utilizaron las marcas de clase, por lo que los resultados se interpretan como aproximaciones.
 
-**Resultados principales.** El tiempo promedio de respuesta fue de 5,3333 días hábiles, superior a la meta de cinco días. La velocidad promedio de brigadas para distancias iguales fue de 33,3333 km/h, calculada mediante la media armónica. La tasa anual compuesta de crecimiento de la recaudación fue de 8,3694 %. El promedio ponderado de trámites fue de 12,4667 por funcionario. La tasa armónica ponderada de procesamiento fue de 5,9259 expedientes por hora, sujeta a la condición de exposición comparable. El crecimiento geométrico promedio de la cobertura fue de 6,1535 %. El gasto mensual estimado por habitante fue de \$342.500 y el crecimiento geométrico aproximado de los ingresos fue de 7,6607 %.
+::: {.callout-important title="Hallazgos principales"}
+El tiempo promedio de respuesta fue de **5,3333 días hábiles**, superior a la meta de cinco días. La velocidad promedio de brigadas para distancias iguales fue de **33,3333 km/h**, calculada mediante la media armónica. La tasa anual compuesta de crecimiento de la recaudación fue de **8,3694 %**. El promedio ponderado de trámites fue de **12,4667 por funcionario**. La tasa armónica ponderada de procesamiento fue de **5,9259 expedientes por hora**, sujeta a la condición de exposición comparable. El crecimiento geométrico promedio de la cobertura fue de **6,1535 %**. El gasto mensual estimado por habitante fue de \$342.500 y el crecimiento geométrico aproximado de los ingresos fue de **7,6607 %**.
+:::
 
 **Conclusión administrativa.** Las medidas de tendencia central permiten sintetizar información para apoyar decisiones de planeación, seguimiento y evaluación. La selección de la media debe responder a la naturaleza del indicador: tiempos y cantidades aditivas, tasas bajo condiciones de exposición comparables o factores de crecimiento. Los resultados deben acompañarse de unidades, supuestos y contexto institucional para evitar interpretaciones equivocadas.
 
@@ -643,3 +653,702 @@ stopifnot(sum(tabla_ingresos$fi) == 30)
 
 cat("Todas las comprobaciones de datos y frecuencias finalizaron correctamente.\n")
 ```
+
+# Medidas de posición: ejercicios 1, 4 y 7
+
+## Objetivo y criterio metodológico
+
+En esta sección se calculan e interpretan el primer cuartil (Q1), la mediana (Q2), el tercer cuartil (Q3), el sexto decil (D6), el segundo quintil (K2) y el percentil 83 (P83) para los ejercicios 1, 4 y 7 del taller.
+
+Las medidas se obtienen de acuerdo con la estructura de cada base:
+
+- **Ejercicio 1:** datos individuales no agrupados. Se utiliza el método de cuantiles tipo 7 de R (`quantile(..., type = 7)`), que interpola linealmente entre observaciones ordenadas.
+- **Ejercicio 4:** variable discreta presentada mediante frecuencias. Se utiliza el cuantil empírico tipo 1 de R (`quantile(..., type = 1)`), que selecciona el menor valor observado cuya frecuencia relativa acumulada alcanza o supera la proporción solicitada.
+- **Ejercicio 7:** datos agrupados en intervalos. Se utiliza la fórmula de interpolación para cuantiles en datos agrupados. Los resultados son aproximados porque no se conocen los valores individuales dentro de cada intervalo.
+
+### Equivalencias de las medidas
+
+$$\[ Q_1=P\_{25},\qquad Q_2=P\_{50},\qquad Q_3=P\_{75} \]$$
+
+$$\[ D_6=P\_{60},\qquad K_2=P\_{40},\qquad P\_{83}=P\_{83} \]$$
+
+En general, un cuantil de orden (p) representa el valor por debajo del cual se encuentra aproximadamente una proporción (p) de las observaciones.
+
+**Ejercicio 1. Tiempos de respuesta a solicitudes**
+
+**Datos y ordenamiento**
+
+Los tiempos registrados, en días hábiles, son 3, 5, 4, 6, 8, 4, 7, 5, 3, 9, 6 y 4.
+
+```{r}
+dias_pos <- c(3, 5, 4, 6, 8, 4, 7, 5, 3, 9, 6, 4)
+dias_ordenados_pos <- sort(dias_pos)
+n_pos <- length(dias_pos)
+
+knitr::kable(
+  data.frame(Posicion = seq_along(dias_ordenados_pos),
+             Tiempo_dias = dias_ordenados_pos),
+  caption = "Ejercicio 1. Datos ordenados de tiempos de respuesta"
+)
+```
+
+La serie ordenada es:
+
+\[ 3, 3, 4, 4, 4, 5, 5, 6, 6, 7, 8, 9 \]
+
+Para el método tipo 7, la posición teórica se calcula como:
+
+$$\[ h=1+(n-1)p \]$$
+
+Si (h=j+g), donde (j) es la parte entera y (g) la parte decimal, el cuantil se obtiene mediante:
+
+$$\[ Q(p)=(1-g)x\_{(j)}+g x\_{(j+1)} \]$$
+
+**Cálculo en R**
+
+```{r}
+prob_pos <- c(
+  "Q1" = 0.25,
+  "Mediana" = 0.50,
+  "Q3" = 0.75,
+  "D6" = 0.60,
+  "K2" = 0.40,
+  "P83" = 0.83
+)
+
+res_pos_e1 <- quantile(
+  dias_pos,
+  probs = unname(prob_pos),
+  type = 7,
+  names = FALSE
+)
+names(res_pos_e1) <- names(prob_pos)
+
+pos_teoricas_e1 <- 1 + (n_pos - 1) * prob_pos
+
+tabla_pos_e1 <- data.frame(
+  Medida = names(prob_pos),
+  Proporcion = unname(prob_pos),
+  Posicion_tipo_7 = as.numeric(pos_teoricas_e1),
+  Resultado_dias = as.numeric(res_pos_e1)
+)
+
+mostrar_tabla(
+  tabla_pos_e1,
+  "Ejercicio 1. Medidas de posición mediante cuantiles tipo 7",
+  digitos = 3
+)
+```
+
+**Desarrollo de los cálculos**
+
+Con (n=12), las posiciones y resultados son:
+
+**Primer cuartil:**
+
+\[ h\_{Q_1}=1+(12-1)(0.25)=3.75 \]
+
+Las observaciones tercera y cuarta son ambas 4:
+
+\[ Q_1=4\text{ días} \]
+
+**Mediana:**
+
+\[ h\_{Q_2}=1+(12-1)(0.50)=6.5 \]
+
+Las observaciones sexta y séptima son ambas 5:
+
+\[ Q_2=5\text{ días} \]
+
+**Tercer cuartil:**
+
+\[ h\_{Q_3}=1+(12-1)(0.75)=9.25 \]
+
+\[ Q_3=6+0.25(7-6)=6.25\text{ días} \]
+
+**Sexto decil:**
+
+\[ h\_{D_6}=1+(12-1)(0.60)=7.6 \]
+
+\[ D_6=5+0.6(6-5)=5.60\text{ días} \]
+
+**Segundo quintil:**
+
+\[ h\_{K_2}=1+(12-1)(0.40)=5.4 \]
+
+\[ K_2=4+0.4(5-4)=4.40\text{ días} \]
+
+**Percentil 83:**
+
+\[ h\_{P\_{83}}=1+(12-1)(0.83)=10.13 \]
+
+\[ P\_{83}=7+0.13(8-7)=7.13\text{ días} \]
+
+**Interpretación**
+
+- **Q1 = 4 días:** aproximadamente el 25 % de las solicitudes registró un tiempo de respuesta de hasta 4 días hábiles.
+- **Mediana = 5 días:** el 50 % de las solicitudes tuvo respuesta en 5 días o menos.
+- **Q3 = 6,25 días:** aproximadamente el 75 % de las solicitudes se respondió en 6,25 días o menos.
+- **D6 = 5,60 días:** aproximadamente el 60 % de las solicitudes se respondió en 5,60 días o menos.
+- **K2 = 4,40 días:** aproximadamente el 40 % de las solicitudes se respondió en 4,40 días o menos.
+- **P83 = 7,13 días:** aproximadamente el 83 % de las solicitudes se respondió en 7,13 días o menos.
+
+**Análisis administrativo.** La mediana de cinco días indica el punto central de los tiempos observados. El percentil 83 ofrece un umbral para examinar la oportunidad de respuesta de la mayoría de las solicitudes. Los resultados con decimales son cuantiles interpolados y no implican que se haya registrado literalmente una fracción de día en una solicitud.
+
+**Ejercicio 4. Número de trámites atendidos**
+
+**Tabla de frecuencias**
+
+```{r}
+xi_pos_e4 <- c(8, 10, 12, 14, 16)
+fi_pos_e4 <- c(3, 5, 9, 8, 5)
+
+tabla_pos_frec_e4 <- data.frame(
+  Tramites = xi_pos_e4,
+  Frecuencia = fi_pos_e4,
+  Frecuencia_acumulada = cumsum(fi_pos_e4),
+  Proporcion_acumulada = cumsum(fi_pos_e4) / sum(fi_pos_e4)
+)
+
+N_pos_e4 <- sum(fi_pos_e4)
+
+mostrar_tabla(
+  tabla_pos_frec_e4,
+  "Ejercicio 4. Distribución de frecuencias y acumuladas",
+  digitos = 3
+)
+```
+
+El total es (N=30) funcionarios. Para una variable discreta, el cuantil empírico tipo 1 selecciona el valor observado correspondiente a la primera frecuencia acumulada que alcanza o supera (p).
+
+La posición de referencia se obtiene mediante:
+
+\[ r=Np \]
+
+Y el cuantil empírico se define como:
+
+\[ Q(p)=x\_{(\lceil Np\rceil)} \]
+
+donde (\lceil \cdot \rceil) representa el redondeo hacia arriba a la siguiente posición entera.
+
+**Cálculo en R**
+
+```{r}
+datos_pos_e4 <- rep(xi_pos_e4, times = fi_pos_e4)
+
+res_pos_e4 <- quantile(
+  datos_pos_e4,
+  probs = unname(prob_pos),
+  type = 1,
+  names = FALSE
+)
+names(res_pos_e4) <- names(prob_pos)
+
+posiciones_e4 <- N_pos_e4 * prob_pos
+
+tabla_pos_e4 <- data.frame(
+  Medida = names(prob_pos),
+  Proporcion = unname(prob_pos),
+  Posicion_N_por_p = as.numeric(posiciones_e4),
+  Posicion_entera = ceiling(as.numeric(posiciones_e4)),
+  Resultado_tramites = as.numeric(res_pos_e4)
+)
+
+mostrar_tabla(
+  tabla_pos_e4,
+  "Ejercicio 4. Medidas de posición para datos discretos",
+  digitos = 2
+)
+```
+
+### Desarrollo de las posiciones
+
+\[ Q_1:\quad 30(0.25)=7.5\Rightarrow \lceil7.5\rceil=8 \]
+
+La octava observación corresponde a 10 trámites:
+$$
+\[ Q_1=10 \]
+
+\[ Q_2:\quad 30(0.50)=15 \]
+
+La observación 15 corresponde a 12 trámites:
+
+\[ Q_2=12 \]
+
+\[ Q_3:\quad 30(0.75)=22.5\Rightarrow \lceil22.5\rceil=23 \]
+$$
+
+La observación 23 corresponde a 14 trámites:
+
+\[ Q_3=14 \]
+
+\[ D_6:\quad 30(0.60)=18 \]
+
+La observación 18 corresponde a 14 trámites:
+
+\[ D_6=14 \]
+
+\[ K_2:\quad 30(0.40)=12 \]
+
+La observación 12 corresponde a 12 trámites:
+
+\[ K_2=12 \]
+
+\[ P\_{83}:\quad 30(0.83)=24.9\Rightarrow \lceil24.9\rceil=25 \]
+
+La observación 25 corresponde a 14 trámites:
+
+\[ P\_{83}=14 \]
+
+### Interpretación
+
+- **Q1 = 10 trámites:** al menos el 25 % de los funcionarios atendió 10 trámites o menos.
+- **Mediana = 12 trámites:** al menos el 50 % de los funcionarios atendió 12 trámites o menos.
+- **Q3 = 14 trámites:** al menos el 75 % de los funcionarios atendió 14 trámites o menos.
+- **D6 = 14 trámites:** al menos el 60 % de los funcionarios atendió 14 trámites o menos.
+- **K2 = 12 trámites:** al menos el 40 % de los funcionarios atendió 12 trámites o menos.
+- **P83 = 14 trámites:** al menos el 83 % de los funcionarios atendió 14 trámites o menos.
+
+**Análisis administrativo.** La mediana de 12 trámites divide la distribución en dos mitades según el criterio empírico utilizado. Los cuantiles superiores se ubican en 14 trámites, lo que muestra que ese nivel concentra una parte importante de las observaciones. Para evaluar productividad o eficiencia se necesitarían, además, metas institucionales y condiciones de trabajo comparables.
+
+## Ejercicio 7. Gasto mensual por habitante
+
+### Distribución agrupada
+
+Los gastos se expresan en miles de pesos y corresponden a 40 barrios.
+
+```{r}
+Li_pos_e7 <- c(100, 200, 300, 400, 500)
+Ls_pos_e7 <- c(200, 300, 400, 500, 600)
+fi_pos_e7 <- c(5, 9, 14, 8, 4)
+Fi_pos_e7 <- cumsum(fi_pos_e7)
+N_pos_e7 <- sum(fi_pos_e7)
+amplitud_pos_e7 <- 100
+
+tabla_pos_e7 <- data.frame(
+  Intervalo = c("100 - <200", "200 - <300", "300 - <400",
+                "400 - <500", "500 - <600"),
+  Li = Li_pos_e7,
+  Ls = Ls_pos_e7,
+  fi = fi_pos_e7,
+  Fi = Fi_pos_e7
+)
+
+mostrar_tabla(
+  tabla_pos_e7,
+  "Ejercicio 7. Distribución de frecuencias del gasto mensual",
+  digitos = 2
+)
+```
+
+### Fórmula para datos agrupados en intervalos
+
+Primero se calcula la posición:
+
+\[ r=Np \]
+
+Luego se identifica el intervalo cuya frecuencia acumulada alcanza o supera dicha posición. El cuantil se estima mediante:
+
+\[ Q_p=L_i+\left(\frac{Np-F_{i-1}}{f_i}\right)c \]
+
+Donde:
+
+- (L_i): límite inferior del intervalo que contiene el cuantil.
+- (N): número total de observaciones.
+- (p): proporción acumulada del cuantil.
+- (F\_{i-1}): frecuencia acumulada anterior al intervalo.
+- (f_i): frecuencia del intervalo que contiene el cuantil.
+- (c): amplitud del intervalo.
+
+### Cálculo reproducible en R
+
+```{r}
+cuantil_agrupado <- function(p, Li, Ls, fi) {
+  Fi <- cumsum(fi)
+  N <- sum(fi)
+  posicion <- N * p
+
+  indice <- which(Fi >= posicion)[1]
+  F_anterior <- if (indice == 1) 0 else Fi[indice - 1]
+  c <- Ls[indice] - Li[indice]
+
+  resultado <- Li[indice] +
+    ((posicion - F_anterior) / fi[indice]) * c
+
+  data.frame(
+    Posicion = posicion,
+    Intervalo = paste0(Li[indice], " - <", Ls[indice]),
+    Li = Li[indice],
+    F_anterior = F_anterior,
+    fi = fi[indice],
+    Amplitud = c,
+    Resultado_miles_pesos = resultado
+  )
+}
+
+detalle_e7 <- do.call(
+  rbind,
+  lapply(seq_along(prob_pos), function(i) {
+    cbind(
+      Medida = names(prob_pos)[i],
+      Proporcion = unname(prob_pos[i]),
+      cuantil_agrupado(
+        p = unname(prob_pos[i]),
+        Li = Li_pos_e7,
+        Ls = Ls_pos_e7,
+        fi = fi_pos_e7
+      )
+    )
+  })
+)
+
+rownames(detalle_e7) <- NULL
+
+mostrar_tabla(
+  detalle_e7,
+  "Ejercicio 7. Identificación del intervalo y cálculo de cada cuantil",
+  digitos = 3
+)
+```
+
+### Desarrollo de los cálculos
+
+**Primer cuartil (Q1).** La posición es:
+
+\[ r=40(0.25)=10 \]
+
+La observación 10 se encuentra en el intervalo (200-\<300). Por tanto:
+
+\[ Q_1=200+\left(\frac{10-5}{9}\right)(100) \]
+
+\[ \boxed{Q_1=255.56\text{ miles de pesos}} \]
+
+**Mediana (Q2).** La posición es:
+
+\[ r=40(0.50)=20 \]
+
+La observación 20 se encuentra en el intervalo (300-\<400):
+
+\[ Q_2=300+\left(\frac{20-14}{14}\right)(100) \]
+
+\[ \boxed{Q_2=342.86\text{ miles de pesos}} \]
+
+**Tercer cuartil (Q3).** La posición es:
+
+\[ r=40(0.75)=30 \]
+
+La observación 30 se encuentra en el intervalo (400-\<500):
+
+\[ Q_3=400+\left(\frac{30-28}{8}\right)(100) \]
+
+\[ \boxed{Q_3=425.00\text{ miles de pesos}} \]
+
+**Sexto decil (D6).** La posición es:
+
+\[ r=40(0.60)=24 \]
+
+La observación 24 se encuentra en el intervalo (300-\<400):
+
+\[ D_6=300+\left(\frac{24-14}{14}\right)(100) \]
+
+\[ \boxed{D_6=371.43\text{ miles de pesos}} \]
+
+**Segundo quintil (K2).** La posición es:
+
+\[ r=40(0.40)=16 \]
+
+La observación 16 se encuentra en el intervalo (300-\<400):
+
+\[ K_2=300+\left(\frac{16-14}{14}\right)(100) \]
+
+\[ \boxed{K_2=314.29\text{ miles de pesos}} \]
+
+**Percentil 83 (P83).** La posición es:
+
+\[ r=40(0.83)=33.2 \]
+
+La posición 33,2 se encuentra en el intervalo (400-\<500):
+
+\[ P\_{83}=400+\left(\frac{33.2-28}{8}\right)(100) \]
+
+\[ \boxed{P_{83}=465.00\text{ miles de pesos}} \]
+
+### Interpretación
+
+- **Q1 = 255,56 miles de pesos:** aproximadamente el 25 % de los barrios registra un gasto mensual por habitante de hasta \$255.560.
+- **Mediana = 342,86 miles de pesos:** aproximadamente el 50 % de los barrios registra un gasto de hasta \$342.860.
+- **Q3 = 425 miles de pesos:** aproximadamente el 75 % de los barrios registra un gasto de hasta \$425.000.
+- **D6 = 371,43 miles de pesos:** aproximadamente el 60 % de los barrios registra un gasto de hasta \$371.430.
+- **K2 = 314,29 miles de pesos:** aproximadamente el 40 % de los barrios registra un gasto de hasta \$314.290.
+- **P83 = 465 miles de pesos:** aproximadamente el 83 % de los barrios registra un gasto de hasta \$465.000.
+
+**Análisis administrativo.** La mediana estima el gasto que divide a los barrios en dos grupos de igual tamaño. El percentil 83 permite identificar un umbral por debajo del cual se ubica aproximadamente el 83 % de los barrios. Estos resultados pueden orientar análisis comparativos de asignación territorial, pero no miden por sí solos la calidad, cobertura o eficiencia del gasto.
+
+## Comparación general de los ejercicios 1, 4 y 7
+
+```{r}
+tabla_comparativa_pos <- data.frame(
+  Medida = names(prob_pos),
+  Ejercicio_1_dias = as.numeric(res_pos_e1),
+  Ejercicio_4_tramites = as.numeric(res_pos_e4),
+  Ejercicio_7_miles_pesos = as.numeric(detalle_e7$Resultado_miles_pesos)
+)
+
+mostrar_tabla(
+  tabla_comparativa_pos,
+  "Resumen comparativo de las seis medidas de posición",
+  digitos = 2
+)
+```
+
+**Nota de unidades:** el ejercicio 1 se expresa en días hábiles; el ejercicio 4, en número de trámites; y el ejercicio 7, en miles de pesos. Los valores numéricos de ejercicios distintos no deben compararse directamente porque representan variables y unidades diferentes.
+
+## Conclusiones de las medidas de posición
+
+1.  Las medidas de posición describen la ubicación relativa de los datos y permiten establecer umbrales para proporciones acumuladas del 25 %, 40 %, 50 %, 60 %, 75 % y 83 %.
+2.  En el ejercicio 1, el método tipo 7 de R interpola entre observaciones ordenadas; por eso algunos cuantiles presentan valores decimales.
+3.  En el ejercicio 4, el cuantil empírico tipo 1 conserva los valores discretos observados y utiliza la frecuencia acumulada para identificar la posición correspondiente.
+4.  En el ejercicio 7, la fórmula para datos agrupados estima los cuantiles dentro de cada intervalo. La estimación supone una distribución aproximadamente uniforme de los datos dentro de la clase.
+5.  La interpretación administrativa debe considerar las unidades, el tamaño de la muestra y los supuestos del método. Un cuantil describe la distribución, pero no constituye por sí mismo una calificación de eficiencia o calidad institucional. \# Medidas de dispersión: varianza, desviación estándar y coeficiente de variación
+
+## Objetivo y criterio estadístico
+
+En esta sección se calculan las medidas de dispersión para los ejercicios 1, 4 y 7. Se utiliza como criterio principal la **varianza muestral** (denominador `n - 1`) y su raíz cuadrada, la desviación estándar muestral. El coeficiente de variación se expresa como porcentaje y se calcula con la desviación estándar muestral dividida por la media.
+
+::: {.callout-important title="Criterio para interpretar los resultados"}
+La varianza y la desviación estándar muestrales se calculan con `n - 1`. Si los datos representan la totalidad de la población de interés, corresponde utilizar la versión poblacional con denominador `N`. El código presenta ambas versiones para evitar confundir los dos criterios.
+:::
+
+### Fórmulas estadísticas en LaTeX
+
+**Varianza muestral:**
+
+$$
+s^2=\frac{\sum_{i=1}^{n}(x_i-\bar{x})^2}{n-1}
+$$
+
+**Desviación estándar muestral:**
+
+$$
+s=\sqrt{s^2}
+$$
+
+**Coeficiente de variación:**
+
+$$
+CV=\frac{s}{\bar{x}}\times 100\%
+$$
+
+Para datos discretos agrupados en una tabla de frecuencias:
+
+$$
+s^2=\frac{\sum_{i=1}^{k}f_i(x_i-\bar{x})^2}{N-1},\qquad
+\bar{x}=\frac{\sum_{i=1}^{k}f_ix_i}{N}
+$$
+
+Para datos agrupados en intervalos se sustituye cada observación por la marca de clase $m_i$; por tanto, las medidas obtenidas son aproximadas:
+
+$$
+s^2\approx\frac{\sum_{i=1}^{k}f_i(m_i-\bar{x})^2}{N-1}
+$$
+
+## Ejercicio 1. Tiempos de respuesta a solicitudes
+
+Los datos son 3, 5, 4, 6, 8, 4, 7, 5, 3, 9, 6 y 4 días hábiles. Se trata de datos individuales no agrupados.
+
+### Desarrollo reproducible en R
+
+```{r}
+dias_disp <- c(3, 5, 4, 6, 8, 4, 7, 5, 3, 9, 6, 4)
+n_e1 <- length(dias_disp)
+media_e1 <- mean(dias_disp)
+var_muestral_e1 <- var(dias_disp)
+sd_muestral_e1 <- sd(dias_disp)
+cv_e1 <- sd_muestral_e1 / media_e1 * 100
+
+var_poblacional_e1 <- mean((dias_disp - media_e1)^2)
+sd_poblacional_e1 <- sqrt(var_poblacional_e1)
+
+resultado_e1_disp <- data.frame(
+  Medida = c("Media", "Varianza muestral", "Desviación estándar muestral",
+             "Coeficiente de variación", "Varianza poblacional",
+             "Desviación estándar poblacional"),
+  Resultado = c(media_e1, var_muestral_e1, sd_muestral_e1, cv_e1,
+                var_poblacional_e1, sd_poblacional_e1),
+  Unidad = c("días", "días²", "días", "%", "días²", "días")
+)
+mostrar_tabla(resultado_e1_disp, "Ejercicio 1. Medidas de dispersión del tiempo de respuesta", digitos = 4)
+```
+
+### Sustitución en las fórmulas
+
+La media es $\bar{x}=5,3333$ días y el tamaño de los datos es $n=12$. Aplicando la fórmula muestral:
+
+$$
+s^2=\frac{\sum(x_i-5,3333)^2}{12-1}=3,6970\text{ días}^2
+$$
+
+$$
+s=\sqrt{3,6970}=1,9228\text{ días}
+$$
+
+$$
+CV=\frac{1,9228}{5,3333}\times100=36,05\%
+$$
+
+::: {.callout-tip title="Interpretación estadística — ejercicio 1"}
+La desviación estándar indica que los tiempos se apartan típicamente alrededor de 1,92 días de la media de 5,33 días. El coeficiente de variación de 36,05 % muestra una dispersión relativa apreciable: los tiempos no son completamente homogéneos. En términos de gestión, conviene revisar los casos con tiempos altos para identificar posibles demoras en el trámite.
+:::
+
+## Ejercicio 4. Número de trámites atendidos
+
+La tabla registra 8, 10, 12, 14 y 16 trámites, con frecuencias de 3, 5, 9, 8 y 5 funcionarios, respectivamente. La frecuencia se incorpora como ponderación; no se calcula la dispersión dando el mismo peso a cada categoría.
+
+### Desarrollo reproducible en R
+
+```{r}
+xi_e4_disp <- c(8, 10, 12, 14, 16)
+fi_e4_disp <- c(3, 5, 9, 8, 5)
+datos_e4_disp <- rep(xi_e4_disp, times = fi_e4_disp)
+N_e4 <- sum(fi_e4_disp)
+media_e4_disp <- weighted.mean(xi_e4_disp, fi_e4_disp)
+var_muestral_e4 <- var(datos_e4_disp)
+sd_muestral_e4 <- sd(datos_e4_disp)
+cv_e4 <- sd_muestral_e4 / media_e4_disp * 100
+var_poblacional_e4 <- sum(fi_e4_disp * (xi_e4_disp - media_e4_disp)^2) / N_e4
+sd_poblacional_e4 <- sqrt(var_poblacional_e4)
+
+tabla_disp_e4 <- data.frame(
+  Tramites = xi_e4_disp,
+  Frecuencia = fi_e4_disp,
+  Desviacion_cuadrada = (xi_e4_disp - media_e4_disp)^2,
+  Frecuencia_por_desviacion_cuadrada = fi_e4_disp * (xi_e4_disp - media_e4_disp)^2
+)
+mostrar_tabla(tabla_disp_e4, "Ejercicio 4. Cálculo ponderado de las desviaciones cuadradas", digitos = 4)
+
+resultado_e4_disp <- data.frame(
+  Medida = c("Media ponderada", "Varianza muestral", "Desviación estándar muestral",
+             "Coeficiente de variación", "Varianza poblacional",
+             "Desviación estándar poblacional"),
+  Resultado = c(media_e4_disp, var_muestral_e4, sd_muestral_e4, cv_e4,
+                var_poblacional_e4, sd_poblacional_e4),
+  Unidad = c("trámites", "trámites²", "trámites", "%", "trámites²", "trámites")
+)
+mostrar_tabla(resultado_e4_disp, "Ejercicio 4. Medidas de dispersión del número de trámites", digitos = 4)
+```
+
+### Sustitución en las fórmulas
+
+Con $N=30$ funcionarios y media ponderada $\bar{x}=12,4667$ trámites:
+
+$$
+s^2=\frac{\sum f_i(x_i-12,4667)^2}{30-1}=5,9816\text{ trámites}^2
+$$
+
+$$
+s=\sqrt{5,9816}=2,4457\text{ trámites}
+$$
+
+$$
+CV=\frac{2,4457}{12,4667}\times100=19,62\%
+$$
+
+::: {.callout-tip title="Interpretación estadística — ejercicio 4"}
+La desviación estándar muestral es de aproximadamente 2,45 trámites alrededor del promedio de 12,47. El CV de 19,62 % evidencia una dispersión relativa menor que la observada en los tiempos del ejercicio 1. La cantidad de trámites atendidos presenta, por tanto, mayor homogeneidad relativa entre funcionarios, aunque la dispersión por sí sola no permite concluir que el desempeño sea eficiente o ineficiente.
+:::
+
+## Ejercicio 7. Gasto mensual por habitante
+
+La distribución está agrupada en intervalos de gasto (miles de pesos). Como no se dispone de los 40 valores individuales, se utiliza la marca de clase de cada intervalo: 150, 250, 350, 450 y 550 miles de pesos, con frecuencias 5, 9, 14, 8 y 4. Los resultados son estimaciones basadas en esas marcas.
+
+### Desarrollo reproducible en R
+
+```{r}
+marcas_e7_disp <- c(150, 250, 350, 450, 550)
+fi_e7_disp <- c(5, 9, 14, 8, 4)
+N_e7 <- sum(fi_e7_disp)
+media_e7_disp <- weighted.mean(marcas_e7_disp, fi_e7_disp)
+
+# Suma ponderada de cuadrados respecto a la media
+suma_cuadrados_e7 <- sum(fi_e7_disp * (marcas_e7_disp - media_e7_disp)^2)
+var_muestral_e7 <- suma_cuadrados_e7 / (N_e7 - 1)
+sd_muestral_e7 <- sqrt(var_muestral_e7)
+cv_e7 <- sd_muestral_e7 / media_e7_disp * 100
+
+var_poblacional_e7 <- suma_cuadrados_e7 / N_e7
+sd_poblacional_e7 <- sqrt(var_poblacional_e7)
+
+tabla_disp_e7 <- data.frame(
+  Marca_clase = marcas_e7_disp,
+  Frecuencia = fi_e7_disp,
+  Desviacion_cuadrada = (marcas_e7_disp - media_e7_disp)^2,
+  Frecuencia_por_desviacion_cuadrada = fi_e7_disp * (marcas_e7_disp - media_e7_disp)^2
+)
+mostrar_tabla(tabla_disp_e7, "Ejercicio 7. Cálculo aproximado de la dispersión por marcas de clase", digitos = 4)
+
+resultado_e7_disp <- data.frame(
+  Medida = c("Media aproximada", "Varianza muestral aproximada",
+             "Desviación estándar muestral aproximada", "Coeficiente de variación aproximado",
+             "Varianza poblacional aproximada", "Desviación estándar poblacional aproximada"),
+  Resultado = c(media_e7_disp, var_muestral_e7, sd_muestral_e7, cv_e7,
+                var_poblacional_e7, sd_poblacional_e7),
+  Unidad = c("miles de pesos", "(miles de pesos)²", "miles de pesos", "%",
+             "(miles de pesos)²", "miles de pesos")
+)
+mostrar_tabla(resultado_e7_disp, "Ejercicio 7. Medidas aproximadas de dispersión del gasto", digitos = 4)
+```
+
+### Sustitución en las fórmulas
+
+La media estimada es $\bar{x}=342,5$ miles de pesos y $N=40$. Con las marcas de clase:
+
+$$
+s^2\approx\frac{\sum f_i(m_i-342,5)^2}{40-1}=13.532,0513\text{ (miles de pesos)}^2
+$$
+
+$$
+s\approx\sqrt{13.532,0513}=116,3273\text{ miles de pesos}
+$$
+
+$$
+CV\approx\frac{116,3273}{342,5}\times100=33,96\%
+$$
+
+::: {.callout-warning title="Limitación de los datos agrupados — ejercicio 7"}
+La varianza y la desviación estándar no son exactas: se calcularon suponiendo que cada barrio tiene un gasto igual a la marca de clase de su intervalo. Los datos individuales podrían producir una dispersión diferente. La desviación estándar estimada equivale a unos \$116.327 pesos, mientras que la media es de \$342.500 mensuales por habitante.
+:::
+
+## Comparación e interpretación conjunta
+
+```{r}
+comparativo_disp <- data.frame(
+  Ejercicio = c("1. Tiempo de respuesta", "4. Trámites atendidos", "7. Gasto por habitante"),
+  Media = c(media_e1, media_e4_disp, media_e7_disp),
+  Varianza_muestral = c(var_muestral_e1, var_muestral_e4, var_muestral_e7),
+  Desviacion_estandar = c(sd_muestral_e1, sd_muestral_e4, sd_muestral_e7),
+  Coeficiente_variacion_pct = c(cv_e1, cv_e4, cv_e7),
+  Tipo_dato = c("Individual", "Frecuencia discreta", "Intervalos; marcas de clase")
+)
+mostrar_tabla(comparativo_disp, "Comparación de medidas de dispersión: ejercicios 1, 4 y 7", digitos = 4)
+```
+
+::: {.callout-note title="Conclusión comparativa"}
+Los coeficientes de variación permiten comparar la dispersión relativa, aunque las variables tengan unidades distintas. El ejercicio 1 presenta un CV aproximado de 36,05 %, el ejercicio 7 de 33,96 % y el ejercicio 4 de 19,62 %. Así, los tiempos de respuesta muestran la mayor variabilidad relativa, seguidos por el gasto mensual estimado; el número de trámites presenta la menor variabilidad relativa. La comparación del ejercicio 7 debe tomarse con cautela por el uso de marcas de clase.
+:::
+
+## Verificación y buenas prácticas en R
+
+```{r}
+# Comprobación de que las frecuencias suman los tamaños esperados
+stopifnot(length(dias_disp) == 12)
+stopifnot(sum(fi_e4_disp) == 30)
+stopifnot(sum(fi_e7_disp) == 40)
+
+# Verificación con funciones base de R para datos expandidos
+stopifnot(isTRUE(all.equal(var(dias_disp), var_muestral_e1)))
+stopifnot(isTRUE(all.equal(var(datos_e4_disp), var_muestral_e4)))
+
+cat("Verificación completada: cálculos reproducibles en R.\n")
+```
+
+**Conclusión general.** La varianza cuantifica la dispersión cuadrática respecto de la media; la desviación estándar devuelve esa dispersión a la unidad original de la variable; y el coeficiente de variación expresa la desviación estándar como porcentaje de la media. Para los ejercicios 1 y 4 se utilizan los datos observados o expandidos según sus frecuencias. Para el ejercicio 7, las medidas son aproximadas porque se sustituyen los valores de cada intervalo por sus marcas de clase.
